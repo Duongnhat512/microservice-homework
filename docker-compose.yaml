@@ -1,0 +1,97 @@
+version: '3'
+services:
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "${API_GATEWAY_PORT}:3000"
+    depends_on:
+      - product-service
+    networks:
+      - microservices-network
+    env_file:
+      - ./api-gateway/.env
+
+  product-service:
+    build: ./product-service
+    ports:
+      - "${PRODUCT_SERVICE_PORT}:3001"
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_NAME=${POSTGRES_DB_PRODUCT}
+      - DB_PORT=5436
+      - PORT=3001
+    depends_on:
+      - postgres
+    networks:
+      - microservices-network
+    env_file:
+      - ./product-service/.env
+  
+  customer-service:
+    build: ./customer-service
+    ports:
+      - "${CUSTOMER_SERVICE_PORT}:3002"
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_NAME=${POSTGRES_DB_CUSTOMER}
+      - DB_PORT=5432
+      - PORT=3002
+    depends_on:
+      - postgres
+    networks:
+      - microservices-network
+    env_file:
+      - ./customer-service/.env
+  
+  order-service:
+    build: ./order-service
+    ports:
+      - "${ORDER_SERVICE_PORT}:3003"
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_NAME=${POSTGRES_DB_ORDER}
+      - DB_PORT=5436
+      - PORT=3003
+    depends_on:
+      - postgres
+    networks:
+      - microservices-network
+    env_file:
+      - ./order-service/.env
+
+  postgres:
+    container_name: microservice-postgres-1
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=12345678
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - microservices-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin-microservices
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: 123456
+    ports:
+      - "5050:80"
+    networks:
+      - microservices-network
+
+volumes:
+  postgres_data:
+
+networks:
+  microservices-network:
+    driver: bridge
