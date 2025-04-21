@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "3000:3000"
+    depends_on:
+      - order-service
+      - payment-service
+      - inventory-service
+      - shipping-service
+
+  order-service:
+    build: ./order-service
+    ports:
+      - "3001:3001"
+
+  payment-service:
+    build: ./payment-service
+    ports:
+      - "3002:3002"
+
+  inventory-service:
+    build: ./inventory-service
+    ports:
+      - "3003:3003"
+
+  shipping-service:
+    build: ./shipping-service
+    ports:
+      - "3004:3004"
